@@ -64,7 +64,7 @@ class MyForm(Qw.QMainWindow):
         # np.seterr(all='ignore')
 
     # マンデルブロ集合に属する点を計算で求める
-    def calc_mandel(self, scale, px, py, cx, cy, cn, dg, canvas, ct):
+    def calc_mandel(self, scale, px, py, cx, cy, cn, dg):
         x = []
         y = []
         for i in range(px):
@@ -90,8 +90,6 @@ class MyForm(Qw.QMainWindow):
             index[mask] = k  # 発散しなかったインデックスにk(色番)を格納
             # 発散しなかったインデックスに新たなｚの値を格納
             z[mask] = np.add(np.power(z[mask], 2), c[mask])
-            # self.step += 1
-            # self.ui.pbar.setValue(self.step)
 
         # 最後まで発散しなかったインデックスはこれに該当する(例えば中央付近)
         # パレットを作る際に末尾に発散しない座標用の色を用意しているのでcnを代入
@@ -100,7 +98,6 @@ class MyForm(Qw.QMainWindow):
 
     # ジュリア集合に属する点を求める
     def calc_julia(self, scale, px, py, cx, cy, cn, dg):
-        st = time.time()
         c = complex(self.real_num, self.im_num)  # ここを変化させると図形が変わる
         x = []
         y = []
@@ -117,21 +114,16 @@ class MyForm(Qw.QMainWindow):
         # 実部と虚部を組み合わせてzの複素数を生成
         z = nx + ny * 1j
         # インデックスを描画する座標、要素を色とする配列を生成
-        index = np.full((px, px), -1, dtype=int)
+        index = np.zeros(z.shape, dtype=int)
 
         for k in range(cn):
-            np.add(np.power(z, 2), c, out=z)
-            index_c = index.copy()
-            index = np.where(abs(z) > dg, k, index)
-            mask = np.multiply(index, index_c)
-            index = np.where(mask < 0, index, index_c)
-            self.step += 1
-            self.ui.pbar.setValue(self.step)
+            mask = np.less(abs(z), dg)  # 発散しなければ(z<2)true
+            # 回数を重ねる毎に色番が上書きされる
+            index[mask] = k  # 発散しなかったインデックスにk(色番)を格納
+            # 発散しなかったインデックスに新たなｚの値を格納
+            z[mask] = np.add(np.power(z[mask], 2), c)
 
-        et = time.time() - st
-        print(et)
-        print(index[0][0])
-
+        index[index == cn - 1] = cn
         return index
 
     # 計算で求めた座標を元に描画していく
@@ -140,8 +132,6 @@ class MyForm(Qw.QMainWindow):
             canvas.setPen(ct[cl])
             canvas.drawPoint(float(i[0] - self.w / 2),
                              float(-i[1] + self.h / 2))
-            # self.step += 1
-            # self.ui.pbar.setValue(self.step)
 
     # 描画ウィンドウが閉じられたときパラメータウィンドウも閉じる
     def closeEvent(self, event):
@@ -178,8 +168,7 @@ class MyForm(Qw.QMainWindow):
         self.param_window.make_palette(self.mCalcNum, self.hstart, self.s)
         index = self.calc_mandel(self.mScale, self.w, self.h,
                                  self.mCenter_x, self.mCenter_y,
-                                 self.mCalcNum, self.mdg,
-                                 canvas, self.colortable)
+                                 self.mCalcNum, self.mdg,)
         self.draw_fractal(canvas, index, self.colortable)
         self.pre_x = self.mCenter_x
         self.pre_y = self.mCenter_y
@@ -190,6 +179,7 @@ class MyForm(Qw.QMainWindow):
 
     # ジュリア集合を描画する
     def draw_julia(self):
+        st = time.time()
         self.step = 0
         canvas = self.make_canvas(self.img, self.w, self.h)
         canvas.translate(self.w / 2, self.h / 2)
@@ -205,6 +195,8 @@ class MyForm(Qw.QMainWindow):
         self.pre_y = self.jCenter_y
         self.make_scene(self.img)
         self.drawflag = 2  # ジュリア集合を描いたことを示す
+        et = time.time() - st
+        print(et)
 
     # 出来上がった図形をpngで保存する
     def save_Image(self):
