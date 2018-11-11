@@ -1,23 +1,76 @@
 # -*- coding: utf-8 -*-
 import sys
 from PyQt5 import QtGui as Qg, QtWidgets as Qw, QtCore as Qt
-
+from multiprocessing import Pool
 import fractal_form  # デザイナーで作った画面をインポートする
 import param_form
 import numpy as np
 import time
 
 
+def mandel_multi(para):
+    """
+    発散判定をマルチプロセスで行う
+    [0:500]:1行分の計算結果
+    [-1]:発散基準
+    [-2]:最大計算回数
+    """
+    x = para
+    c = x[0:500]
+    dg = int(x[-1])
+    cn = int(x[-2])
+    # zの複素数を生成
+    z = np.zeros(c.shape, dtype=complex)
+    # インデックスを描画する座標、要素を色とする配列を生成
+    index = np.zeros(c.shape, dtype=int)
+    for k in range(cn):
+        mask = np.less(np.abs(z), dg)
+        index[mask] = k
+        z[mask] = np.add(np.power(z[mask], 2), c[mask])
+
+    # 最後まで発散しなかったインデックスはこれに該当する(例えば中央付近)
+    # パレットを作る際に末尾に発散しない座標用の色を用意しているのでcnを代入
+    index[index == cn - 1] = cn
+    return index
+
+
+def julia_multi(para):
+    """
+    発散判定をマルチプロセスで行う
+    [0:500]:1行分の計算結果
+    [-1]:複素数Cの値
+    [-2]:発散基準
+    [-3]:最大計算回数
+    """
+    x = para
+    z = x[0:500]
+    c = x[-1]
+    dg = int(x[-2])
+    cn = int(x[-3])
+    index = np.zeros(z.shape, dtype=int)
+    for k in range(cn):
+        mask = np.less(np.abs(z), dg)
+        index[mask] = k
+        z[mask] = np.add(np.power(z[mask], 2), c)
+
+    index[index == cn - 1] = cn
+    return index
+
+
 class MyForm(Qw.QMainWindow):
     def __init__(self, parent=None):
+        """
+        各変数の初期化を行う
+        """
         super().__init__(parent)
         self.ui = fractal_form.Ui_MainWindow()
         self.ui.setupUi(self)
         self.pix = self.ui.graphicsView.width()
         self.img = Qg.QImage(self.pix, self.pix, Qg.QImage.Format_ARGB32)
+
+        # カラーパレットに関する変数
         self.colortable = []
         self.hstart = 100
-        self.step = 0
         self.s = 255
 
         # どちらの集合を描いたかのフラグ
@@ -60,97 +113,84 @@ class MyForm(Qw.QMainWindow):
                                int((res.height() - fsize.height()) / 2 - 30))
         self.param_window.show()
 
-    # マンデルブロ集合に属する点を計算で求める
     def calc_mandel(self, scale, px, cx, cy, cn, dg):
+        """
+        マンデルブロ集合の計算に用いる各座標の複素数Cを用意する
+        """
         x = []
-        y = []
-        ps = 0
+        pl = []
+        core = 4
         for i in range(px):
-            # Cの実部と虚部を求める
             x.append((1 / 125 * i - 2) * scale / 4 + cx)
-            y.append((1 / 125 * i - 2) * scale / 4 + cy)
 
         nx = np.array(x, dtype=float)
-        ny = np.array(y, dtype=float)
-        nx = nx[:, np.newaxis]
 
-        # 実部と虚部を組み合わせてCの複素数を生成
-        c = nx + ny * 1j
-        # zの複素数を生成
-        z = np.zeros(c.shape, dtype=complex)
-        # インデックスを描画する座標、要素を色とする配列を生成
-        index = np.zeros(c.shape, dtype=int)
-        # 300行の変化を観察する
-        tmp = np.full((300, 500), False, dtype=bool)
-        ps = 0
-        ecolor = 0
-        for k in range(cn):
-            mask = np.less(abs(z), dg)
-            # 一つ前の判定と同じ結果が5回連続したらそこで判定繰り返しを停止する
-            if np.allclose(tmp, mask[100:400]):
-                ps += 1
-                if ps >= 5:
-                    ecolor = k - 1
-                    break
-            else:
-                tmp = mask[100:400]
-                ps = 0
-            index[mask] = k
-            z[mask] = np.add(np.power(z[mask], 2), c[mask])
+        for j in range(px):
+            a = nx + ((1 / 125 * j - 2) *
+                      scale / 4 + cy) * 1j
+            pl.append(np.append(a, [cn, dg]))  # １行毎のパラメータ
 
-        # 最後まで発散しなかったインデックスはこれに該当する(例えば中央付近)
-        # パレットを作る際に末尾に発散しない座標用の色を用意しているのでcnを代入
-        index[index == ecolor] = cn
-        return index
+        with Pool(core) as p:
+            result = p.map(mandel_multi, pl)
+
+        index = np.array(result, dtype=int)
+        return index.T
 
     # ジュリア集合に属する点を求める
     def calc_julia(self, scale, px, cx, cy, cn, dg):
+        """
+        ジュリア集合の計算に用いる各座標の複素数zを用意する
+        """
         c = complex(self.real_num, self.im_num)  # ここを変化させると図形が変わる
         x = []
-        y = []
+        pl = []
+        core = 4
         for i in range(px):
-            # Cの実部と虚部を求める
             x.append((1 / 125 * i - 2) * scale / 4 + cx)
-            y.append((1 / 125 * i - 2) * scale / 4 + cy)
 
         nx = np.array(x, dtype=float)
-        ny = np.array(y, dtype=float)
-        nx = nx[:, np.newaxis]
-        # 実部と虚部を組み合わせてzの複素数を生成
-        z = nx + ny * 1j
-        # インデックスを描画する座標、要素を色とする配列を生成
-        index = np.zeros(z.shape, dtype=int)
 
-        for k in range(cn):
-            mask = np.less(abs(z), dg)
-            index[mask] = k
-            z[mask] = np.add(np.power(z[mask], 2), c)
+        for j in range(px):
+            a = nx + ((1 / 125 * j - 2) *
+                      scale / 4 + cy) * 1j
+            pl.append(np.append(a, [cn, dg, c]))  # １行毎のパラメータ
 
-        index[index == cn - 1] = cn
-        return index
+        with Pool(core) as p:
+            result = p.map(julia_multi, pl)
 
-    # 計算で求めた座標を元に描画していく
+        index = np.array(result, dtype=int)
+        return index.T
+
     def draw_fractal(self, canvas, index, ct):
+        """
+        計算で求めた座標を元に描画していく
+        """
         # iには座標、clには色番号を与える
         for i, cl in np.ndenumerate(index):
             canvas.setPen(ct[cl])
             canvas.drawPoint(float(i[0] - self.pix / 2),
                              float(-i[1] + self.pix / 2))
 
-    # 描画ウィンドウが閉じられたときパラメータウィンドウも閉じる
     def closeEvent(self, event):
+        """
+        描画ウィンドウが閉じられたときパラメータウィンドウも閉じる
+        """
         self.param_window.close()
 
-    # キャンバスの作成
     def make_canvas(self, img, w):
+        """
+        キャンバスの作成
+        """
         canvas = Qg.QPainter(img)  # self.imgにお絵かきできるように
         canvas.setBrush(Qg.QColor(250, 250, 250))
         canvas.drawRect(0, 0, w, w)  # ブラシ色で背景塗りつぶし
         return canvas
 
     def make_scene(self, img):
-        # graphicViewオブジェクトにイメージを描画するための処理
-        # graphicsViewの上にシーン、シーンの上にアイテム
+        """
+        graphicViewオブジェクトにイメージを描画するための処理
+        graphicsViewの上にシーン、シーンの上にアイテム
+        """
         scene = Qw.QGraphicsScene()  # シーンを作成
 
         # アイテム(QPainterがself.imgにお絵かきしたものをアイテムにする)
@@ -160,16 +200,16 @@ class MyForm(Qw.QMainWindow):
         self.ui.graphicsView.setScene(scene)  # 更にシーンをViewにのせて完成
 
     # ここからボタンイベント
-    # マンデルブロ集合を描画する
     def draw_mandel(self):
+        """
+        マンデルブロ集合を描画するための各種処理を呼び出す
+        """
         st = time.time()
-        self.step = 0
         canvas = self.make_canvas(self.img, self.pix)
         canvas.translate(self.pix / 2, self.pix / 2)  # キャンバスの中央を原点とする
         canvas.scale(1, -1)  # y軸反転
         self.param_window.confirm_mandel_param()
         self.param_window.make_palette(self.mCalcNum, self.hstart, self.s)
-        self.ui.pbar.setMaximum(self.mCalcNum)
         index = self.calc_mandel(self.mScale, self.pix, self.mCenter_x,
                                  self.mCenter_y, self.mCalcNum, self.mdg)
         self.draw_fractal(canvas, index, self.colortable)
@@ -182,7 +222,6 @@ class MyForm(Qw.QMainWindow):
 
     # ジュリア集合を描画する
     def draw_julia(self):
-        self.step = 0
         canvas = self.make_canvas(self.img, self.pix)
         canvas.translate(self.pix / 2, self.pix / 2)
         canvas.scale(1, -1)
@@ -301,10 +340,10 @@ class ParamWindow(Qw.QMainWindow):
 
     # パレットを作成する
     def make_palette(self, climit, hstart, s):
-        hdiff = 360 / climit
+        hc = 360  # 1周
         self.pwin.colortable = []
         for i in range(climit):
-            h = hdiff * i + hstart
+            h = (i + hstart) % hc
             if self.ui.brightBox.checkState() == Qt.Qt.Checked:
                 v = 255 - (255 * i // climit)
             else:
