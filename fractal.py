@@ -119,7 +119,6 @@ class MyForm(Qw.QMainWindow):
         """
         x = []
         pl = []
-        core = 4
         for i in range(px):
             x.append((1 / 125 * i - 2) * scale / 4 + cx)
 
@@ -130,7 +129,7 @@ class MyForm(Qw.QMainWindow):
                       scale / 4 + cy) * 1j
             pl.append(np.append(a, [cn, dg]))  # １行毎のパラメータ
 
-        with Pool(core) as p:
+        with Pool() as p:
             result = p.map(mandel_multi, pl)
 
         index = np.array(result, dtype=int)
@@ -271,7 +270,7 @@ class MyForm(Qw.QMainWindow):
                 self.jScale / 4 + self.pre_y
 
             self.param_window.ui.jPosXText.setText(str(x))
-            self.param_window.ui.jPosYText.setText(str(y))
+            self.param_window.ui.jPosYText.setText(str(y * -1))
 
 
 # パラメータ用のウィンドウ
