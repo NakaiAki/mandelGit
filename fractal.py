@@ -45,8 +45,8 @@ def julia_multi(para):
     x = para
     z = x[0:500]
     c = x[-1]
-    dg = int(x[-2])
-    cn = int(x[-3])
+    dg = int(x[-2].real)
+    cn = int(x[-3].real)
     index = np.zeros(z.shape, dtype=int)
     for k in range(cn):
         mask = np.less(np.abs(z), dg)
@@ -67,6 +67,10 @@ class MyForm(Qw.QMainWindow):
         self.ui.setupUi(self)
         self.pix = self.ui.graphicsView.width()
         self.img = Qg.QImage(self.pix, self.pix, Qg.QImage.Format_ARGB32)
+        self.canvas = self.make_canvas(self.img, self.pix)
+        self.canvas.translate(self.pix / 2, self.pix / 2)  # キャンバスの中央を原点とする
+        self.canvas.scale(1, -1)  # y軸反転
+        self.index = np.array((500, 500))
 
         # カラーパレットに関する変数
         self.colortable = []
@@ -127,7 +131,7 @@ class MyForm(Qw.QMainWindow):
 
         for j in range(px):
             a = nx + ((1 / 125 * j - 2) *
-                      scale / 4 + cy) * 1j
+                      scale / 4 + (-cy)) * 1j
             pl.append(np.append(a, [cn, dg]))  # １行毎のパラメータ
 
         with Pool() as p:
@@ -153,7 +157,7 @@ class MyForm(Qw.QMainWindow):
 
         for j in range(px):
             a = nx + ((1 / 125 * j - 2) *
-                      scale / 4 + cy) * 1j
+                      scale / 4 + (-cy)) * 1j
             pl.append(np.append(a, [cn, dg, c]))  # １行毎のパラメータ
 
         with Pool(core) as p:
@@ -173,7 +177,8 @@ class MyForm(Qw.QMainWindow):
                              float(-i[1] + self.pix / 2))
 
     def redraw(self):
-        self.redraw(self.)
+        self.draw_fractal(self.canvas, self.index, self.colortable)
+        self.make_scene(self.img)
 
     def closeEvent(self, event):
         """
@@ -209,16 +214,13 @@ class MyForm(Qw.QMainWindow):
         マンデルブロ集合を描画するための各種処理を呼び出す
         """
         st = time.time()
-        canvas = self.make_canvas(self.img, self.pix)
-        canvas.translate(self.pix / 2, self.pix / 2)  # キャンバスの中央を原点とする
-        canvas.scale(1, -1)  # y軸反転
         self.param_window.confirm_mandel_param()
         self.param_window.make_palette(self.mCalcNum, self.hstart, self.s)
-        index = self.calc_mandel(self.mScale, self.pix, self.mCenter_x,
-                                 self.mCenter_y, self.mCalcNum, self.mdg)
-        self.draw_fractal(canvas, index, self.colortable)
+        self.index = self.calc_mandel(self.mScale, self.pix, self.mCenter_x,
+                                      self.mCenter_y, self.mCalcNum, self.mdg)
+        self.draw_fractal(self.canvas, self.index, self.colortable)
         self.pre_x = self.mCenter_x
-        self.pre_y = self.mCenter_y
+        self.pre_y = -self.mCenter_y
         self.make_scene(self.img)
         self.drawflag = 1  # マンデルブロ集合を描いたことを示す
         et = time.time() - st
@@ -226,17 +228,14 @@ class MyForm(Qw.QMainWindow):
 
     # ジュリア集合を描画する
     def draw_julia(self):
-        canvas = self.make_canvas(self.img, self.pix)
-        canvas.translate(self.pix / 2, self.pix / 2)
-        canvas.scale(1, -1)
         self.param_window.confirm_julia_param()
         self.param_window.make_palette(self.jCalcNum, self.hstart, self.s)
-        index = self.calc_julia(self.jScale, self.pix,
-                                self.jCenter_x, self.jCenter_y,
-                                self.jCalcNum, self.mdg)
-        self.draw_fractal(canvas, index, self.colortable)
+        self.index = self.calc_julia(self.jScale, self.pix,
+                                     self.jCenter_x, self.jCenter_y,
+                                     self.jCalcNum, self.mdg)
+        self.draw_fractal(self.canvas, self.index, self.colortable)
         self.pre_x = self.jCenter_x
-        self.pre_y = self.jCenter_y
+        self.pre_y = -self.jCenter_y
         self.make_scene(self.img)
         self.drawflag = 2  # ジュリア集合を描いたことを示す
 
@@ -342,9 +341,6 @@ class ParamWindow(Qw.QMainWindow):
         scene.addItem(item)
         self.ui.colorbar.setScene(scene)
 
-
-
-
     # パレットを作成する
     def make_palette(self, climit, hstart, s):
         hc = 360  # 1周
@@ -360,6 +356,9 @@ class ParamWindow(Qw.QMainWindow):
             self.pwin.colortable.append(c)
 
         self.pwin.colortable.append(Qg.QColor(255, 255, 255))
+
+    def chenge_color(self):
+        self.pwin.redraw()
 
     # 何色用意するか、その際にカラーバーにどのくらいの間隔で塗るか
     def set_interval(self, limit):

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>390</width>
-    <height>341</height>
+    <height>390</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,14 +18,14 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>0</width>
-    <height>0</height>
+    <width>390</width>
+    <height>390</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>16777215</width>
-    <height>16777215</height>
+    <width>390</width>
+    <height>390</height>
    </size>
   </property>
   <property name="font">
@@ -37,7 +37,7 @@
    <string>パラメータ</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="myresource.qrc">
+   <iconset>
     <normaloff>:/icon/param.png</normaloff>:/icon/param.png</iconset>
   </property>
   <property name="styleSheet">
@@ -546,7 +546,7 @@ QSlider::handle:vertical {
       <x>0</x>
       <y>0</y>
       <width>390</width>
-      <height>340</height>
+      <height>391</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -1424,22 +1424,34 @@ font: 11pt &quot;Meiryo UI&quot;;
        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
       </property>
      </widget>
-     <zorder>label_15</zorder>
-     <zorder>brightBox</zorder>
-     <zorder>hueSlider</zorder>
-     <zorder>colorbar</zorder>
-     <zorder>hueText</zorder>
-     <zorder>chromaText</zorder>
-     <zorder>chromaSlider</zorder>
-     <zorder>label_14</zorder>
-     <zorder>label_15</zorder>
-     <zorder>brightBox</zorder>
-     <zorder>hueSlider</zorder>
-     <zorder>colorbar</zorder>
-     <zorder>hueText</zorder>
-     <zorder>chromaText</zorder>
-     <zorder>chromaSlider</zorder>
-     <zorder>label_14</zorder>
+     <widget class="QPushButton" name="changecol">
+      <property name="geometry">
+       <rect>
+        <x>260</x>
+        <y>300</y>
+        <width>111</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Meiryo UI</family>
+        <pointsize>11</pointsize>
+        <weight>50</weight>
+        <italic>false</italic>
+        <bold>false</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton
+{
+font: 11pt &quot;Meiryo UI&quot;;
+}</string>
+      </property>
+      <property name="text">
+       <string>色の変更</string>
+      </property>
+     </widget>
     </widget>
    </widget>
   </widget>
@@ -1476,12 +1488,12 @@ font: 11pt &quot;Meiryo UI&quot;;
    <slot>confirm_mandel_param()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>185</x>
-     <y>305</y>
+     <x>211</x>
+     <y>317</y>
     </hint>
     <hint type="destinationlabel">
      <x>305</x>
-     <y>458</y>
+     <y>389</y>
     </hint>
    </hints>
   </connection>
@@ -1492,12 +1504,12 @@ font: 11pt &quot;Meiryo UI&quot;;
    <slot>confirm_julia_param()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>168</x>
-     <y>379</y>
+     <x>211</x>
+     <y>317</y>
     </hint>
     <hint type="destinationlabel">
      <x>336</x>
-     <y>411</y>
+     <y>389</y>
     </hint>
    </hints>
   </connection>
@@ -1540,12 +1552,28 @@ font: 11pt &quot;Meiryo UI&quot;;
    <slot>move_slider()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>77</x>
-     <y>260</y>
+     <x>78</x>
+     <y>251</y>
     </hint>
     <hint type="destinationlabel">
-     <x>413</x>
+     <x>389</x>
      <y>265</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>changecol</sender>
+   <signal>clicked()</signal>
+   <receiver>SubWindow</receiver>
+   <slot>chenge_color()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>284</x>
+     <y>343</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>209</x>
+     <y>389</y>
     </hint>
    </hints>
   </connection>
@@ -1557,5 +1585,6 @@ font: 11pt &quot;Meiryo UI&quot;;
   <slot>move_slider()</slot>
   <slot>show_color()</slot>
   <slot>check_state_change()</slot>
+  <slot>chenge_color()</slot>
  </slots>
 </ui>

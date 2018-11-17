@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>500</width>
+    <width>497</width>
     <height>774</height>
    </rect>
   </property>
@@ -16,11 +16,23 @@
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>497</width>
+    <height>774</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>497</width>
+    <height>774</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>マンデルブロ・ジュリア描画</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="myresource.qrc">
+   <iconset>
     <normaloff>:/icon/color.png</normaloff>:/icon/color.png</iconset>
   </property>
   <property name="styleSheet">
@@ -680,7 +692,7 @@ font: 11pt &quot;Meiryo UI&quot;;
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>500</width>
+     <width>497</width>
      <height>21</height>
     </rect>
    </property>
@@ -724,7 +736,7 @@ font: 11pt &quot;Meiryo UI&quot;;
   </widget>
   <action name="actionSave_S">
    <property name="icon">
-    <iconset resource="myresource.qrc">
+    <iconset>
      <normaloff>:/icon/save.png</normaloff>:/icon/save.png</iconset>
    </property>
    <property name="text">
@@ -736,7 +748,7 @@ font: 11pt &quot;Meiryo UI&quot;;
   </action>
   <action name="actionOpen_O">
    <property name="icon">
-    <iconset resource="myresource.qrc">
+    <iconset>
      <normaloff>:/icon/open.png</normaloff>:/icon/open.png</iconset>
    </property>
    <property name="text">
@@ -770,7 +782,7 @@ font: 11pt &quot;Meiryo UI&quot;;
      <y>626</y>
     </hint>
     <hint type="destinationlabel">
-     <x>499</x>
+     <x>385</x>
      <y>36</y>
     </hint>
    </hints>
@@ -786,7 +798,7 @@ font: 11pt &quot;Meiryo UI&quot;;
      <y>626</y>
     </hint>
     <hint type="destinationlabel">
-     <x>499</x>
+     <x>385</x>
      <y>37</y>
     </hint>
    </hints>
@@ -802,7 +814,7 @@ font: 11pt &quot;Meiryo UI&quot;;
      <y>697</y>
     </hint>
     <hint type="destinationlabel">
-     <x>499</x>
+     <x>385</x>
      <y>339</y>
     </hint>
    </hints>
@@ -818,7 +830,7 @@ font: 11pt &quot;Meiryo UI&quot;;
      <y>696</y>
     </hint>
     <hint type="destinationlabel">
-     <x>499</x>
+     <x>385</x>
      <y>188</y>
     </hint>
    </hints>
