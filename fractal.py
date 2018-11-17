@@ -17,8 +17,8 @@ def mandel_multi(para):
     """
     x = para
     c = x[0:500]
-    dg = int(x[-1])
-    cn = int(x[-2])
+    dg = int(x[-1].real)
+    cn = int(x[-2].real)
     # zの複素数を生成
     z = np.zeros(c.shape, dtype=complex)
     # インデックスを描画する座標、要素を色とする配列を生成
@@ -117,6 +117,7 @@ class MyForm(Qw.QMainWindow):
         """
         マンデルブロ集合の計算に用いる各座標の複素数Cを用意する
         """
+        st = time.time()
         x = []
         pl = []
         for i in range(px):
@@ -133,6 +134,7 @@ class MyForm(Qw.QMainWindow):
             result = p.map(mandel_multi, pl)
 
         index = np.array(result, dtype=int)
+        print(time.time() - st)
         return index.T
 
     # ジュリア集合に属する点を求める
@@ -169,6 +171,9 @@ class MyForm(Qw.QMainWindow):
             canvas.setPen(ct[cl])
             canvas.drawPoint(float(i[0] - self.pix / 2),
                              float(-i[1] + self.pix / 2))
+
+    def redraw(self):
+        self.redraw(self.)
 
     def closeEvent(self, event):
         """
@@ -261,7 +266,7 @@ class MyForm(Qw.QMainWindow):
                 self.mScale / 4 + self.pre_y
 
             self.param_window.ui.mPosXText.setText(str(x))
-            self.param_window.ui.mPosYText.setText(str(y))
+            self.param_window.ui.mPosYText.setText(str(y * -1))
 
         elif self.drawflag == 2:  # ジュリア集合が描かれているとき
             x = (1 / 125 * mouseevent.x() - 2) * \
@@ -336,6 +341,9 @@ class ParamWindow(Qw.QMainWindow):
         item = Qw.QGraphicsPixmapItem(Qg.QPixmap(self.color_img))
         scene.addItem(item)
         self.ui.colorbar.setScene(scene)
+
+
+
 
     # パレットを作成する
     def make_palette(self, climit, hstart, s):
