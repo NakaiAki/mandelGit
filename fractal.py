@@ -5,7 +5,6 @@ from multiprocessing import Pool
 import fractal_form  # デザイナーで作った画面をインポートする
 import param_form
 import numpy as np
-import time
 
 
 def mandel_multi(para):
@@ -58,6 +57,9 @@ def julia_multi(para):
 
 
 class MyForm(Qw.QMainWindow):
+    """
+    描画ウィンドウ
+    """
     def __init__(self, parent=None):
         """
         各変数の初期化を行う
@@ -74,8 +76,6 @@ class MyForm(Qw.QMainWindow):
 
         # カラーパレットに関する変数
         self.colortable = []
-        self.hstart = 100
-        self.s = 255
 
         # どちらの集合を描いたかのフラグ
         self.drawflag = 0
@@ -119,37 +119,44 @@ class MyForm(Qw.QMainWindow):
 
     def calc_mandel(self, scale, px, cx, cy, cn, dg):
         """
-        マンデルブロ集合の計算に用いる各座標の複素数Cを用意する
+        マンデルブロ集合の計算に用いる各座標の複素数Cを用意し、
+        並列処理用関数からの計算結果を返す
         """
-        st = time.time()
         x = []
         pl = []
+        result = []
+        # x座標の値を-2~2に正規化
         for i in range(px):
             x.append((1 / 125 * i - 2) * scale / 4 + cx)
 
         nx = np.array(x, dtype=float)
 
+        # x座標とy座標を組み合わせて複素数にしたものを1行毎に纏めてリストに追加
         for j in range(px):
             a = nx + ((1 / 125 * j - 2) *
                       scale / 4 + (-cy)) * 1j
             pl.append(np.append(a, [cn, dg]))  # １行毎のパラメータ
 
+        # 並列処理を行う
         with Pool() as p:
-            result = p.map(mandel_multi, pl)
+            it = p.imap(mandel_multi, pl, 4)  # imapはイテレータを返す
+            for n, j in enumerate(it):
+                result.append(j)
+                self.ui.pbar.setValue(self.ui.pbar.value() + 1)
 
+        # 最終的な計算結果をnumpy配列に変換し返す
         index = np.array(result, dtype=int)
-        print(time.time() - st)
         return index.T
 
-    # ジュリア集合に属する点を求める
     def calc_julia(self, scale, px, cx, cy, cn, dg):
         """
-        ジュリア集合の計算に用いる各座標の複素数zを用意する
+        ジュリア集合の計算に用いる各座標の複素数zを用意し、
+        並列処理用関数からの計算結果を返す
         """
         c = complex(self.real_num, self.im_num)  # ここを変化させると図形が変わる
         x = []
         pl = []
-        core = 4
+        result = []
         for i in range(px):
             x.append((1 / 125 * i - 2) * scale / 4 + cx)
 
@@ -158,10 +165,13 @@ class MyForm(Qw.QMainWindow):
         for j in range(px):
             a = nx + ((1 / 125 * j - 2) *
                       scale / 4 + (-cy)) * 1j
-            pl.append(np.append(a, [cn, dg, c]))  # １行毎のパラメータ
+            pl.append(np.append(a, [cn, dg, c]))
 
-        with Pool(core) as p:
-            result = p.map(julia_multi, pl)
+        with Pool() as p:
+            it = p.imap(julia_multi, pl, 4)
+            for n, j in enumerate(it):
+                result.append(j)
+                self.ui.pbar.setValue(self.ui.pbar.value() + 1)
 
         index = np.array(result, dtype=int)
         return index.T
@@ -170,13 +180,20 @@ class MyForm(Qw.QMainWindow):
         """
         計算で求めた座標を元に描画していく
         """
+        count = 0
         # iには座標、clには色番号を与える
         for i, cl in np.ndenumerate(index):
             canvas.setPen(ct[cl])
             canvas.drawPoint(float(i[0] - self.pix / 2),
                              float(-i[1] + self.pix / 2))
+            count += 1
+            if count % 1000 == 0:
+                self.ui.pbar.setValue(self.ui.pbar.value() + 1)
 
     def redraw(self):
+        """
+        描画色のみの変更の際は計算を行わずに再描画を行う
+        """
         self.draw_fractal(self.canvas, self.index, self.colortable)
         self.make_scene(self.img)
 
@@ -213,9 +230,9 @@ class MyForm(Qw.QMainWindow):
         """
         マンデルブロ集合を描画するための各種処理を呼び出す
         """
-        st = time.time()
+        self.ui.pbar.setMaximum(750)
+        self.ui.pbar.setValue(0)
         self.param_window.confirm_mandel_param()
-        self.param_window.make_palette(self.mCalcNum, self.hstart, self.s)
         self.index = self.calc_mandel(self.mScale, self.pix, self.mCenter_x,
                                       self.mCenter_y, self.mCalcNum, self.mdg)
         self.draw_fractal(self.canvas, self.index, self.colortable)
@@ -223,13 +240,15 @@ class MyForm(Qw.QMainWindow):
         self.pre_y = -self.mCenter_y
         self.make_scene(self.img)
         self.drawflag = 1  # マンデルブロ集合を描いたことを示す
-        et = time.time() - st
-        print(et)
 
     # ジュリア集合を描画する
     def draw_julia(self):
+        """
+        ジュリア集合を描画するための各種処理を呼び出す
+        """
+        self.ui.pbar.setMaximum(750)
+        self.ui.pbar.setValue(0)
         self.param_window.confirm_julia_param()
-        self.param_window.make_palette(self.jCalcNum, self.hstart, self.s)
         self.index = self.calc_julia(self.jScale, self.pix,
                                      self.jCenter_x, self.jCenter_y,
                                      self.jCalcNum, self.mdg)
@@ -239,24 +258,31 @@ class MyForm(Qw.QMainWindow):
         self.make_scene(self.img)
         self.drawflag = 2  # ジュリア集合を描いたことを示す
 
-    # 出来上がった図形をpngで保存する
     def save_Image(self):
+        """
+        出来上がった図形をpngで保存する
+        """
         # 第二引数はダイアログのタイトル。第三は表示するパス
         fname = Qw.QFileDialog.getSaveFileName(self, '保存',
                                                './image', 'PNG(*.png)')
         if fname[0]:  # ファイルのパス
             self.ui.graphicsView.grab().save(fname[0])
 
-    # 保存された図形を読み込んで表示する
     def load_Image(self):
+        """
+        保存された図形を読み込んで表示する
+        """
         fname = Qw.QFileDialog.getOpenFileName(self, '開く',
                                                './image', 'PNG(*.png)')
         if fname[0]:
             self.img = Qg.QImage(fname[0])
             self.make_scene(self.img)
 
-    # キャンバス上をクリックするとパラメータウィンドウの中心の座標がクリックしたポイントになる
     def mousePressEvent(self, mouseevent):
+        """
+        キャンバス上をクリックした際にパラメータウィンドウの中心の座標に
+        クリックした場所に対応する座標をセットする
+        """
         # クリックした座標に拡大率、一つ前の中心を加味して新たな中心座標を求める
         if self.drawflag == 1:  # マンデルブロ集合が描かれているとき
             x = (1 / 125 * mouseevent.x() - 2) * \
@@ -277,9 +303,10 @@ class MyForm(Qw.QMainWindow):
             self.param_window.ui.jPosYText.setText(str(y * -1))
 
 
-# パラメータ用のウィンドウ
-# 本当はサブウィンドウとして生成したかったが上手くいかないのでメインウィンドウとして生成。
 class ParamWindow(Qw.QMainWindow):
+    """
+    パラメータを入力するためのウィンドウ
+    """
     def __init__(self, parent_window, parent=None):
         super().__init__(parent)
         self.parent = parent
@@ -296,18 +323,25 @@ class ParamWindow(Qw.QMainWindow):
                                                   self.clbar_w)
         self.interval = self.clbar_w // self.pwin.mCalcNum + 1
         self.limit = self.pwin.mCalcNum + 1
+        self.s = 255
+        self.hstart = 170
 
-    # マンデルブロ集合のパラメータを確定する
     def confirm_mandel_param(self):
+        """
+        マンデルブロ集合のパラメータをセットする
+        """
         self.pwin.mCalcNum = int(self.ui.mCalcLimitText.text())
         self.pwin.mdg = int(self.ui.mdgText.text())
         self.pwin.mScale = float(self.ui.mSizeText.text())
         self.pwin.mCenter_x = float(self.ui.mPosXText.text())
         self.pwin.mCenter_y = float(self.ui.mPosYText.text())
         self.set_interval(self.pwin.mCalcNum)
+        self.make_palette(self.pwin.mCalcNum, self.hstart, self.s)
 
-    # ジュリア集合のパラメータを確定する
     def confirm_julia_param(self):
+        """
+        ジュリア集合のパラメータをセットする
+        """
         self.pwin.jCalcNum = int(self.ui.jCalcLimitText.text())
         self.pwin.jdg = int(self.ui.jdgText.text())
         self.pwin.jScale = float(self.ui.jSizeText.text())
@@ -316,18 +350,22 @@ class ParamWindow(Qw.QMainWindow):
         self.pwin.real_num = float(self.ui.realText.text())
         self.pwin.im_num = float(self.ui.imText.text())
         self.set_interval(self.pwin.jCalcNum)
+        self.make_palette(self.pwin.jCalcNum, self.hstart, self.s)
 
-    # スライダーを調節したとき
     def move_slider(self, value):
+        """
+        パラメータウィンドウのパレットタブに存在する各種スライダーを調節した際の処理
+        作成されたカラーパレットのサンプルを表示する
+        """
         if self.sender() == self.ui.chromaSlider:
             self.ui.chromaText.setText(str(value))
-            self.pwin.s = value
+            self.s = value
         elif self.sender() == self.ui.hueSlider:
             self.ui.hueText.setText(str(value))
-            self.pwin.hstart = value
+            self.hstart = value
 
         self.make_palette(self.limit,
-                          self.pwin.hstart, self.pwin.s)
+                          self.hstart, self.s)
         nc = 0
         for i in range(self.clbar_w):
             if i % self.interval < 1:
@@ -341,8 +379,22 @@ class ParamWindow(Qw.QMainWindow):
         scene.addItem(item)
         self.ui.colorbar.setScene(scene)
 
-    # パレットを作成する
-    def make_palette(self, climit, hstart, s):
+    def change_color_number(self):
+        """
+        スライダー横のテキストボックスから色を調節する場合の処理
+        """
+        if self.sender() == self.ui.chromaText:
+            self.ui.chromaSlider.setSliderPosition(int(self.ui.chromaText.text()))
+        elif self.sender() == self.ui.hueText:
+            self.ui.hueSlider.setSliderPosition(int(self.ui.hueText.text()))
+
+    def make_palette(self, climit, hstart=170, s=255):
+        """
+        パレットを作成する
+        climit: 計算回数
+        hstart: 色相の初期値
+        s: 彩度
+        """
         hc = 360  # 1周
         self.pwin.colortable = []
         for i in range(climit):
@@ -355,15 +407,47 @@ class ParamWindow(Qw.QMainWindow):
             c.setHsv(h, s, v)
             self.pwin.colortable.append(c)
 
+        # 末尾に発散しなかった座標の描画色をセットする
         self.pwin.colortable.append(Qg.QColor(255, 255, 255))
 
-    def chenge_color(self):
-        self.pwin.redraw()
+    def change_color(self):
+        """
+        再計算せずに描画色の変更のみ行う
+        """
+        if self.pwin.drawflag > 0:
+            self.pwin.redraw()
+        else:
+            Qw.QMessageBox.warning(self, "エラー", "先に描画を行ってください")
 
     # 何色用意するか、その際にカラーバーにどのくらいの間隔で塗るか
     def set_interval(self, limit):
+        """
+        カラーパレットのサンプルを描画するための準備
+        """
         self.limit = limit
         self.interval = self.clbar_w // self.limit + 1
+
+    def validate_integer(self):
+        """
+        入力されたパラメータがint型に変換出来るかチェックする
+        """
+        num = self.sender()
+        try:
+            int(num.text())
+        except ValueError:
+            Qw.QMessageBox.warning(self, "エラー", "整数値で入力してください")
+            self.sender().setFocus()
+
+    def validate_float(self):
+        """
+        入力されたパラメータがfloat型に変換出来るかチェックする
+        """
+        num = self.sender()
+        try:
+            float(num.text())
+        except ValueError:
+            Qw.QMessageBox.warning(self, "エラー", "整数または少数を入力してください")
+            self.sender().setFocus()
 
 
 if __name__ == '__main__':
