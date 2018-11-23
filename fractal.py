@@ -60,6 +60,7 @@ class MyForm(Qw.QMainWindow):
     """
     描画ウィンドウ
     """
+
     def __init__(self, parent=None):
         """
         各変数の初期化を行う
@@ -307,6 +308,7 @@ class ParamWindow(Qw.QMainWindow):
     """
     パラメータを入力するためのウィンドウ
     """
+
     def __init__(self, parent_window, parent=None):
         super().__init__(parent)
         self.parent = parent
@@ -366,12 +368,18 @@ class ParamWindow(Qw.QMainWindow):
 
         self.make_palette(self.limit,
                           self.hstart, self.s)
-        nc = 0
-        for i in range(self.clbar_w):
-            if i % self.interval < 1:
-                self.color_canvas.fillRect(i, 0, self.interval,
-                                           30, self.pwin.colortable[nc])
-                nc += 1
+
+        # nc = 0
+        # for i in range(self.clbar_w):
+        #     if i % self.interval < 1:
+        #         self.color_canvas.fillRect(i, 0, self.interval,
+        #                                    30, self.pwin.colortable[nc])
+        #         nc += 1
+
+        intarval = self.clbar_w / self.limit
+        for i in range(self.limit):
+            self.color_canvas.fillRect(intarval * i, 0, 50,
+                                       self.clbar_h, self.pwin.colortable[i])
 
         # シーンを作成してGraphicsViewに乗せる
         scene = Qw.QGraphicsScene()
@@ -395,16 +403,19 @@ class ParamWindow(Qw.QMainWindow):
         hstart: 色相の初期値
         s: 彩度
         """
-        hc = 360  # 1周
+        hc = 180  # 1周
+        step = hc / climit
         self.pwin.colortable = []
+        s = s / 255
         for i in range(climit):
-            h = (i + hstart) % hc
+            # h = (step * i / hc + hstart / 360) % 1
+            h = (hstart + step * i) / (360 + hc)
             if self.ui.brightBox.checkState() == Qt.Qt.Checked:
-                v = 255 - (255 * i // climit)
+                v = (255 - (255 * i // climit)) / 255
             else:
-                v = 255
+                v = 1
             c = Qg.QColor()
-            c.setHsv(h, s, v)
+            c.setHsvF(h, s, v)
             self.pwin.colortable.append(c)
 
         # 末尾に発散しなかった座標の描画色をセットする
@@ -425,7 +436,7 @@ class ParamWindow(Qw.QMainWindow):
         カラーパレットのサンプルを描画するための準備
         """
         self.limit = limit
-        self.interval = self.clbar_w // self.limit + 1
+        self.interval = self.clbar_w // self.limit
 
     def validate_integer(self):
         """
