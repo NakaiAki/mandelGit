@@ -32,7 +32,7 @@
    <string>マンデルブロ・ジュリア描画</string>
   </property>
   <property name="windowIcon">
-   <iconset>
+   <iconset resource="myresource.qrc">
     <normaloff>:/icon/color.png</normaloff>:/icon/color.png</iconset>
   </property>
   <property name="styleSheet">
@@ -707,7 +707,16 @@ font: 11pt &quot;Meiryo UI&quot;;
     <addaction name="actionOpen_O"/>
     <addaction name="actionExit_Z"/>
    </widget>
+   <widget class="QMenu" name="menuGallery_G">
+    <property name="title">
+     <string>Gallery(&amp;G)</string>
+    </property>
+    <addaction name="Frost"/>
+    <addaction name="Ameba"/>
+    <addaction name="Flower"/>
+   </widget>
    <addaction name="menu_F"/>
+   <addaction name="menuGallery_G"/>
   </widget>
   <widget class="QToolBar" name="toolBar">
    <property name="sizePolicy">
@@ -736,7 +745,7 @@ font: 11pt &quot;Meiryo UI&quot;;
   </widget>
   <action name="actionSave_S">
    <property name="icon">
-    <iconset>
+    <iconset resource="myresource.qrc">
      <normaloff>:/icon/save.png</normaloff>:/icon/save.png</iconset>
    </property>
    <property name="text">
@@ -748,7 +757,7 @@ font: 11pt &quot;Meiryo UI&quot;;
   </action>
   <action name="actionOpen_O">
    <property name="icon">
-    <iconset>
+    <iconset resource="myresource.qrc">
      <normaloff>:/icon/open.png</normaloff>:/icon/open.png</iconset>
    </property>
    <property name="text">
@@ -764,6 +773,21 @@ font: 11pt &quot;Meiryo UI&quot;;
    </property>
    <property name="shortcut">
     <string>Ctrl+Alt+Q</string>
+   </property>
+  </action>
+  <action name="Frost">
+   <property name="text">
+    <string>Frost</string>
+   </property>
+  </action>
+  <action name="Ameba">
+   <property name="text">
+    <string>Ameba</string>
+   </property>
+  </action>
+  <action name="Flower">
+   <property name="text">
+    <string>Flower</string>
    </property>
   </action>
  </widget>
@@ -883,6 +907,54 @@ font: 11pt &quot;Meiryo UI&quot;;
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>Frost</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>load_csv()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>248</x>
+     <y>386</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>Ameba</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>load_csv()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>248</x>
+     <y>386</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>Flower</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>load_csv()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>248</x>
+     <y>386</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>draw_mandel()</slot>
@@ -891,5 +963,6 @@ font: 11pt &quot;Meiryo UI&quot;;
   <slot>confirm_para()</slot>
   <slot>make_sub_window()</slot>
   <slot>load_Image()</slot>
+  <slot>load_csv()</slot>
  </slots>
 </ui>

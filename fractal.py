@@ -5,6 +5,7 @@ from multiprocessing import Pool
 import fractal_form  # デザイナーで作った画面をインポートする
 import param_form
 import numpy as np
+import pandas as pd
 
 
 def mandel_multi(para):
@@ -279,6 +280,21 @@ class MyForm(Qw.QMainWindow):
             self.img = Qg.QImage(fname[0])
             self.make_scene(self.img)
 
+    def load_csv(self):
+        name = self.sender().objectName()
+        df = pd.read_csv('parameter/mandel_param.csv', index_col=0)
+        listdf = df[name:name].values.tolist()[0]
+        self.param_window.ui.mCalcLimitText.setText(str(int(listdf[0])))
+        self.param_window.ui.mdgText.setText(str(int(listdf[1])))
+        self.param_window.ui.mSizeText.setText(str(listdf[2]))
+        self.param_window.ui.mPosXText.setText(str(listdf[3]))
+        self.param_window.ui.mPosYText.setText(str(listdf[4]))
+        self.param_window.ui.chromaText.setText(str(int(listdf[5])))
+        self.param_window.ui.hueText.setText(str(int(listdf[6])))
+        self.param_window.ui.chromaSlider.setSliderPosition(int(listdf[5]))
+        self.param_window.ui.hueSlider.setSliderPosition(int(listdf[6]))
+        self.draw_mandel()
+
     def mousePressEvent(self, mouseevent):
         """
         キャンバス上をクリックした際にパラメータウィンドウの中心の座標に
@@ -368,13 +384,6 @@ class ParamWindow(Qw.QMainWindow):
 
         self.make_palette(self.limit,
                           self.hstart, self.s)
-
-        # nc = 0
-        # for i in range(self.clbar_w):
-        #     if i % self.interval < 1:
-        #         self.color_canvas.fillRect(i, 0, self.interval,
-        #                                    30, self.pwin.colortable[nc])
-        #         nc += 1
 
         intarval = self.clbar_w / self.limit
         for i in range(self.limit):
