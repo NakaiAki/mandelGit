@@ -280,7 +280,7 @@ class MyForm(Qw.QMainWindow):
             self.img = Qg.QImage(fname[0])
             self.make_scene(self.img)
 
-    def load_csv(self):
+    def load_mandel_csv(self):
         name = self.sender().objectName()
         df = pd.read_csv('parameter/mandel_param.csv', index_col=0)
         listdf = df[name:name].values.tolist()[0]
@@ -294,6 +294,23 @@ class MyForm(Qw.QMainWindow):
         self.param_window.ui.chromaSlider.setSliderPosition(int(listdf[5]))
         self.param_window.ui.hueSlider.setSliderPosition(int(listdf[6]))
         self.draw_mandel()
+
+    def load_julia_csv(self):
+        name = self.sender().objectName()
+        df = pd.read_csv('parameter/julia_param.csv', index_col=0)
+        listdf = df[name:name].values.tolist()[0]
+        self.param_window.ui.jCalcLimitText.setText(str(int(listdf[0])))
+        self.param_window.ui.jdgText.setText(str(int(listdf[1])))
+        self.param_window.ui.jSizeText.setText(str(listdf[2]))
+        self.param_window.ui.jPosXText.setText(str(listdf[3]))
+        self.param_window.ui.jPosYText.setText(str(listdf[4]))
+        self.param_window.ui.chromaText.setText(str(int(listdf[5])))
+        self.param_window.ui.hueText.setText(str(int(listdf[6])))
+        self.param_window.ui.realText.setText(str(listdf[7]))
+        self.param_window.ui.imText.setText(str(listdf[8]))
+        self.param_window.ui.chromaSlider.setSliderPosition(int(listdf[5]))
+        self.param_window.ui.hueSlider.setSliderPosition(int(listdf[6]))
+        self.draw_julia()
 
     def mousePressEvent(self, mouseevent):
         """

@@ -714,6 +714,13 @@ font: 11pt &quot;Meiryo UI&quot;;
     <addaction name="Frost"/>
     <addaction name="Ameba"/>
     <addaction name="Flower"/>
+    <addaction name="Suraj"/>
+    <addaction name="Poison"/>
+    <addaction name="Healing"/>
+    <addaction name="separator"/>
+    <addaction name="Whirling"/>
+    <addaction name="Mandel"/>
+    <addaction name="Autumn"/>
    </widget>
    <addaction name="menu_F"/>
    <addaction name="menuGallery_G"/>
@@ -788,6 +795,36 @@ font: 11pt &quot;Meiryo UI&quot;;
   <action name="Flower">
    <property name="text">
     <string>Flower</string>
+   </property>
+  </action>
+  <action name="Suraj">
+   <property name="text">
+    <string>Suraj</string>
+   </property>
+  </action>
+  <action name="Healing">
+   <property name="text">
+    <string>Healing</string>
+   </property>
+  </action>
+  <action name="Mandel">
+   <property name="text">
+    <string>Mandel</string>
+   </property>
+  </action>
+  <action name="Whirling">
+   <property name="text">
+    <string>Whirling</string>
+   </property>
+  </action>
+  <action name="Poison">
+   <property name="text">
+    <string>Poison</string>
+   </property>
+  </action>
+  <action name="Autumn">
+   <property name="text">
+    <string>Autumn</string>
    </property>
   </action>
  </widget>
@@ -911,7 +948,7 @@ font: 11pt &quot;Meiryo UI&quot;;
    <sender>Frost</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>load_csv()</slot>
+   <slot>load_mandel_csv()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -927,7 +964,7 @@ font: 11pt &quot;Meiryo UI&quot;;
    <sender>Ameba</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>load_csv()</slot>
+   <slot>load_mandel_csv()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -943,7 +980,103 @@ font: 11pt &quot;Meiryo UI&quot;;
    <sender>Flower</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>load_csv()</slot>
+   <slot>load_mandel_csv()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>248</x>
+     <y>386</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>Suraj</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>load_mandel_csv()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>248</x>
+     <y>386</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>Healing</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>load_mandel_csv()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>248</x>
+     <y>386</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>Mandel</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>load_julia_csv()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>248</x>
+     <y>386</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>248</x>
+     <y>386</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>Whirling</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>load_julia_csv()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>248</x>
+     <y>386</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>Poison</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>load_mandel_csv()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>248</x>
+     <y>386</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>Autumn</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>load_julia_csv()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -963,6 +1096,7 @@ font: 11pt &quot;Meiryo UI&quot;;
   <slot>confirm_para()</slot>
   <slot>make_sub_window()</slot>
   <slot>load_Image()</slot>
-  <slot>load_csv()</slot>
+  <slot>load_mandel_csv()</slot>
+  <slot>load_julia_csv()</slot>
  </slots>
 </ui>
